@@ -1,0 +1,451 @@
+/* ============================================================
+   MiBanco Perú - Estilos Principales
+   Paleta: Verde #006633, Amarillo #F5C518, Blanco
+============================================================ */
+
+:root {
+    --mb-green: #006633;
+    --mb-green-dark: #004d26;
+    --mb-green-light: #00a651;
+    --mb-yellow: #F5C518;
+    --mb-yellow-dark: #d4a914;
+    --mb-bg: #f4f7f4;
+    --mb-card-bg: #ffffff;
+    --mb-text: #1a1a2e;
+    --mb-muted: #6c757d;
+    --mb-border: #e0ece5;
+    --mb-success: #28a745;
+    --mb-danger: #dc3545;
+    --mb-sidebar-w: 260px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: var(--mb-bg);
+    color: var(--mb-text);
+    min-height: 100vh;
+}
+
+/* ---- NAVBAR ---- */
+.navbar-mibanco {
+    background: var(--mb-green) !important;
+    box-shadow: 0 2px 12px rgba(0,102,51,0.35);
+    padding: 0.5rem 0;
+    z-index: 1040;
+}
+
+.navbar-mibanco .nav-link {
+    color: rgba(255,255,255,0.88) !important;
+    font-size: 0.88rem;
+    font-weight: 500;
+    padding: 0.45rem 0.85rem !important;
+    border-radius: 6px;
+    transition: all 0.2s;
+}
+
+.navbar-mibanco .nav-link:hover,
+.navbar-mibanco .nav-link.active {
+    color: #fff !important;
+    background: rgba(255,255,255,0.12);
+}
+
+.brand-text {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+}
+
+.logo-sun svg polygon {
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
+}
+
+.avatar-circle {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: var(--mb-yellow);
+    color: var(--mb-green-dark);
+    font-size: 0.7rem;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+}
+
+.dropdown-menu-mibanco {
+    border: 1px solid var(--mb-border);
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    padding: 0.5rem;
+}
+
+.dropdown-menu-mibanco .dropdown-item {
+    border-radius: 6px;
+    padding: 0.5rem 0.9rem;
+    font-size: 0.87rem;
+    transition: all 0.15s;
+    color: var(--mb-text);
+}
+
+.dropdown-menu-mibanco .dropdown-item:hover {
+    background: #e8f5ee;
+    color: var(--mb-green);
+}
+
+.hora-peru {
+    font-size: 0.78rem;
+    opacity: 0.7;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- MAIN CONTENT ---- */
+.main-content {
+    padding: 1.8rem 2rem;
+    min-height: calc(100vh - 130px);
+}
+
+/* ---- PAGE HEADER ---- */
+.page-header {
+    margin-bottom: 1.5rem;
+}
+
+.page-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--mb-green-dark);
+    margin-bottom: 0.25rem;
+}
+
+.page-header .breadcrumb {
+    font-size: 0.8rem;
+    margin-bottom: 0;
+}
+
+/* ---- CARDS ---- */
+.mb-card {
+    background: var(--mb-card-bg);
+    border-radius: 14px;
+    border: 1px solid var(--mb-border);
+    box-shadow: 0 2px 10px rgba(0,102,51,0.06);
+    padding: 1.5rem;
+    height: 100%;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.mb-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,102,51,0.1); }
+
+.mb-card-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--mb-border);
+}
+
+.mb-card-header h5 {
+    font-weight: 700; font-size: 0.95rem;
+    color: var(--mb-green-dark); margin: 0;
+}
+
+/* ---- ACCOUNT CARDS ---- */
+.account-card {
+    border-radius: 16px;
+    padding: 1.5rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    min-height: 160px;
+}
+
+.account-card:hover { transform: translateY(-3px); box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+
+.account-card::before {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+}
+
+.account-card::after {
+    content: '';
+    position: absolute; bottom: -50px; right: 20px;
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+}
+
+.account-card.pen-card { background: linear-gradient(135deg, #006633 0%, #00a651 100%); }
+.account-card.usd-card { background: linear-gradient(135deg, #1a3a5c 0%, #2d6a9f 100%); }
+.account-card.yellow-card { background: linear-gradient(135deg, #d4a914 0%, #F5C518 100%); color: #1a1a2e; }
+.account-card.purple-card { background: linear-gradient(135deg, #5a2d82 0%, #9b59b6 100%); }
+
+.account-card .card-product {
+    font-size: 0.78rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1px;
+    opacity: 0.8; margin-bottom: 0.5rem;
+}
+
+.account-card .card-number {
+    font-size: 0.82rem; letter-spacing: 2px;
+    opacity: 0.7; margin-bottom: 0.75rem; font-family: monospace;
+}
+
+.account-card .card-balance {
+    font-size: 1.9rem; font-weight: 800;
+    line-height: 1;
+}
+
+.account-card .card-currency {
+    font-size: 0.85rem; font-weight: 600; opacity: 0.8;
+    margin-top: 0.25rem;
+}
+
+/* ---- STAT CARDS ---- */
+.stat-card {
+    border-radius: 14px;
+    padding: 1.2rem 1.5rem;
+    display: flex; align-items: center; gap: 1rem;
+    background: var(--mb-card-bg);
+    border: 1px solid var(--mb-border);
+    box-shadow: 0 2px 8px rgba(0,102,51,0.06);
+}
+
+.stat-icon {
+    width: 52px; height: 52px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.4rem; flex-shrink: 0;
+}
+
+.stat-icon.green { background: #e8f5ee; color: var(--mb-green); }
+.stat-icon.yellow { background: #fdf8e1; color: var(--mb-yellow-dark); }
+.stat-icon.blue { background: #e3f0fb; color: #2d6a9f; }
+.stat-icon.red { background: #fde8e8; color: var(--mb-danger); }
+
+.stat-label { font-size: 0.78rem; color: var(--mb-muted); margin-bottom: 0.2rem; }
+.stat-value { font-size: 1.4rem; font-weight: 800; color: var(--mb-text); line-height: 1; }
+
+/* ---- TRANSACTIONS ---- */
+.tx-item {
+    display: flex; align-items: center; gap: 1rem;
+    padding: 0.85rem 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.tx-item:last-child { border-bottom: none; padding-bottom: 0; }
+
+.tx-icon {
+    width: 42px; height: 42px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; flex-shrink: 0;
+}
+
+.tx-icon.deposit { background: #e8f5ee; color: var(--mb-green); }
+.tx-icon.withdraw { background: #fde8e8; color: var(--mb-danger); }
+.tx-icon.transfer { background: #e3f0fb; color: #2d6a9f; }
+.tx-icon.yapa { background: #f0e8fb; color: #7c3aed; }
+.tx-icon.payment { background: #fdf8e1; color: var(--mb-yellow-dark); }
+
+.tx-amount-pos { color: var(--mb-success); font-weight: 700; }
+.tx-amount-neg { color: var(--mb-danger); font-weight: 700; }
+
+/* ---- BUTTONS ---- */
+.btn-mibanco {
+    background: var(--mb-green);
+    color: #fff; font-weight: 600;
+    border: none; border-radius: 50px;
+    padding: 0.6rem 2rem;
+    transition: all 0.2s;
+    box-shadow: 0 3px 10px rgba(0,102,51,0.25);
+}
+
+.btn-mibanco:hover {
+    background: var(--mb-green-dark); color: #fff;
+    box-shadow: 0 5px 15px rgba(0,102,51,0.35);
+    transform: translateY(-1px);
+}
+
+.btn-mibanco-outline {
+    background: transparent; color: var(--mb-green);
+    font-weight: 600; border: 2px solid var(--mb-green);
+    border-radius: 50px; padding: 0.55rem 1.8rem;
+    transition: all 0.2s;
+}
+
+.btn-mibanco-outline:hover {
+    background: var(--mb-green); color: #fff;
+}
+
+.btn-yellow {
+    background: var(--mb-yellow);
+    color: var(--mb-green-dark); font-weight: 700;
+    border: none; border-radius: 50px;
+    padding: 0.7rem 2rem;
+    box-shadow: 0 3px 10px rgba(245,197,24,0.35);
+    transition: all 0.2s;
+}
+
+.btn-yellow:hover {
+    background: var(--mb-yellow-dark); color: var(--mb-green-dark);
+    transform: translateY(-1px);
+}
+
+/* ---- QUICK ACTIONS ---- */
+.quick-action {
+    text-align: center; padding: 1.2rem 0.8rem;
+    border-radius: 14px; cursor: pointer;
+    background: var(--mb-card-bg);
+    border: 1.5px solid var(--mb-border);
+    transition: all 0.2s;
+    text-decoration: none; display: block;
+    color: var(--mb-text);
+}
+
+.quick-action:hover {
+    border-color: var(--mb-green);
+    box-shadow: 0 4px 16px rgba(0,102,51,0.12);
+    color: var(--mb-green);
+    transform: translateY(-2px);
+}
+
+.quick-action .qa-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    background: #e8f5ee;
+    color: var(--mb-green);
+    font-size: 1.4rem;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 0.6rem;
+    transition: all 0.2s;
+}
+
+.quick-action:hover .qa-icon { background: var(--mb-green); color: #fff; }
+.quick-action span { font-size: 0.78rem; font-weight: 600; line-height: 1.2; }
+
+/* ---- FORMS ---- */
+.form-control-mibanco {
+    border: 1.5px solid var(--mb-border);
+    border-radius: 10px;
+    padding: 0.65rem 1rem;
+    font-size: 0.9rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-control-mibanco:focus {
+    border-color: var(--mb-green);
+    box-shadow: 0 0 0 3px rgba(0,102,51,0.12);
+    outline: none;
+}
+
+/* ---- BADGES ---- */
+.badge-activa { background: #e8f5ee; color: var(--mb-green); }
+.badge-bloqueada { background: #fde8e8; color: var(--mb-danger); }
+.badge-pendiente { background: #fdf8e1; color: #b7791f; }
+.badge-pagada { background: #e8f5ee; color: var(--mb-green); }
+.badge-morosa { background: #fde8e8; color: var(--mb-danger); }
+
+/* ---- LOGIN PAGE ---- */
+.login-page {
+    min-height: 100vh;
+    background: var(--mb-green);
+    display: flex; align-items: center; justify-content: center;
+}
+
+.login-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    width: 100%; max-width: 420px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+
+.login-logo { text-align: center; margin-bottom: 1.5rem; }
+.login-logo .brand-text { color: var(--mb-green); font-size: 2rem; }
+
+/* ---- INDEX / HOME ---- */
+.hero-section {
+    background: linear-gradient(135deg, var(--mb-green) 0%, #009944 60%, #00c058 100%);
+    min-height: 480px;
+    position: relative;
+    overflow: hidden;
+    display: flex; align-items: center;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute; top: -100px; right: -100px;
+    width: 400px; height: 400px; border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+}
+
+.topbar {
+    background: var(--mb-green-dark);
+    padding: 0.4rem 0;
+}
+
+.main-nav {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    position: sticky; top: 0; z-index: 100;
+}
+
+/* ---- FOOTER ---- */
+.footer-mibanco {
+    background: var(--mb-green-dark);
+    margin-top: auto;
+}
+
+/* ---- SIMULADOR ---- */
+.simulador-result {
+    background: linear-gradient(135deg, var(--mb-green) 0%, var(--mb-green-light) 100%);
+    border-radius: 16px;
+    color: #fff;
+    padding: 1.5rem;
+}
+
+/* ---- UTILITIES ---- */
+.text-green { color: var(--mb-green) !important; }
+.text-yellow { color: var(--mb-yellow-dark) !important; }
+.bg-green-soft { background: #e8f5ee; }
+.border-green { border-color: var(--mb-green) !important; }
+
+.divider-green { border-color: var(--mb-green); opacity: 0.2; }
+
+.section-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--mb-green);
+    margin-bottom: 1rem;
+}
+
+/* Cronograma table */
+.table-cronograma th {
+    background: var(--mb-green);
+    color: #fff; font-size: 0.78rem;
+    font-weight: 600; text-transform: uppercase;
+}
+
+.table-cronograma tr:nth-child(even) { background: #f8fdf9; }
+
+/* ---- LOAN PROGRESS ---- */
+.loan-progress-bar {
+    height: 8px; border-radius: 50px;
+    background: #e0ece5;
+    overflow: hidden;
+}
+
+.loan-progress-fill {
+    height: 100%; border-radius: 50px;
+    background: linear-gradient(90deg, var(--mb-green), var(--mb-green-light));
+    transition: width 0.6s ease;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .main-content { padding: 1rem; }
+    .account-card .card-balance { font-size: 1.5rem; }
+}

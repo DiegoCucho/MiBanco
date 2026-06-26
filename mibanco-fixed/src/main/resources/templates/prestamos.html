@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Préstamos | MiBanco Perú</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link th:href="@{/css/mibanco.css}" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+<div class="main-content">
+
+    <div th:if="${exito}" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i><span th:text="${exito}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 style="font-weight:800; color:#006633;"><i class="bi bi-cash-stack me-2"></i>Mis Préstamos</h4>
+        <button class="btn btn-success" style="border-radius:20px;" data-bs-toggle="modal" data-bs-target="#modalSolicitar">
+            <i class="bi bi-plus-lg me-1"></i>Solicitar Préstamo
+        </button>
+    </div>
+
+    <!-- Lista de préstamos -->
+    <div th:if="${prestamos != null and !prestamos.isEmpty()}">
+        <div class="row g-3">
+            <div class="col-md-6" th:each="p : ${prestamos}">
+                <div class="mb-card h-100">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h6 class="fw-bold mb-1" th:text="${p.producto.nombre}">Producto</h6>
+                            <small class="text-muted">Préstamo #<span th:text="${p.id}">0</span></small>
+                        </div>
+                        <span class="badge fs-6"
+                              th:classappend="${p.estado.name() == 'PENDIENTE' ? 'bg-warning text-dark' :
+                                              (p.estado.name() == 'APROBADO' ? 'bg-info' :
+                                              (p.estado.name() == 'DESEMBOLSADO' ? 'bg-success' :
+                                              (p.estado.name() == 'MOROSO' ? 'bg-danger' : 'bg-secondary')))}"
+                              th:text="${p.estado.name()}">ESTADO</span>
+                    </div>
+                    <div class="row g-2 mb-3">
+                        <div class="col-6">
+                            <div style="font-size:0.72rem; color:#888; text-transform:uppercase; font-weight:600;">Monto</div>
+                            <div class="fw-bold" th:text="${'S/ ' + #numbers.formatDecimal(p.montoTotal, 1, 'COMMA', 2, 'POINT')}">0</div>
+                        </div>
+                        <div class="col-6">
+                            <div style="font-size:0.72rem; color:#888; text-transform:uppercase; font-weight:600;">Cuota mensual</div>
+                            <div class="fw-bold" th:text="${'S/ ' + #numbers.formatDecimal(p.cuotaMensual, 1, 'COMMA', 2, 'POINT')}">0</div>
+                        </div>
+                        <div class="col-6">
+                            <div style="font-size:0.72rem; color:#888; text-transform:uppercase; font-weight:600;">Plazo</div>
+                            <div th:text="${p.plazoMeses} + ' meses'">0</div>
+                        </div>
+                        <div class="col-6">
+                            <div style="font-size:0.72rem; color:#888; text-transform:uppercase; font-weight:600;">Fecha solicitud</div>
+                            <div th:text="${p.fechaSolicitud}">-</div>
+                        </div>
+                    </div>
+                    <div th:if="${p.estado.name() == 'PENDIENTE'}" class="alert alert-warning py-2 mb-2" style="font-size:0.83rem; border-radius:10px;">
+                        <i class="bi bi-hourglass-split me-1"></i> Tu solicitud está siendo revisada por el analista.
+                    </div>
+                    <div th:if="${p.estado.name() == 'APROBADO'}" class="alert alert-info py-2 mb-2" style="font-size:0.83rem; border-radius:10px;">
+                        <i class="bi bi-check-circle me-1"></i> ¡Aprobado! El desembolso será procesado pronto.
+                    </div>
+                    <a th:if="${p.estado.name() == 'DESEMBOLSADO'}" th:href="@{/prestamos/{id}/cuotas(id=${p.id})}"
+                       class="btn btn-sm btn-outline-success" style="border-radius:20px;">
+                        <i class="bi bi-list-ol me-1"></i>Ver cronograma
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div th:if="${prestamos == null or prestamos.isEmpty()}" class="text-center py-5 text-muted">
+        <i class="bi bi-cash-stack" style="font-size:3rem; color:#ccc;"></i>
+        <p class="mt-3">Aún no tienes préstamos. ¡Solicita tu primer préstamo!</p>
+    </div>
+
+    <!-- Modal solicitar préstamo -->
+    <div class="modal fade" id="modalSolicitar" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content" style="border-radius:18px;">
+                <div class="modal-header" style="background:linear-gradient(135deg,#006633,#009944); color:#fff; border-radius:18px 18px 0 0;">
+                    <h5 class="modal-title"><i class="bi bi-cash-stack me-2"></i>Solicitar Préstamo</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <form th:action="@{/prestamos/solicitar}" method="post">
+                    <div class="modal-body p-4">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Producto de préstamo</label>
+                            <select class="form-select" name="productoId" id="selectProducto" onchange="actualizarInfo()" required>
+                                <option value="">-- Selecciona un producto --</option>
+                                <option th:each="prod : ${productos}"
+                                        th:value="${prod.id}"
+                                        th:text="${prod.nombre + ' — TCEA: ' + #numbers.formatDecimal(prod.tceaMaxima * 100, 1, 'COMMA', 2, 'POINT') + '%'}"
+                                        th:data-tcea="${prod.tceaMaxima}"
+                                        th:data-min="${prod.plazoMinimo}"
+                                        th:data-max="${prod.plazoMaximo}">
+                                </option>
+                            </select>
+                        </div>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Monto (S/)</label>
+                                <input type="number" class="form-control" name="monto" id="inputMonto"
+                                       min="100" step="100" required onchange="calcularCuota()">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Plazo (meses)</label>
+                                <input type="number" class="form-control" name="plazoMeses" id="inputPlazo"
+                                       min="1" required onchange="calcularCuota()">
+                                <small id="infoPlazos" class="text-muted"></small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Período de gracia (meses)</label>
+                                <select class="form-select" name="periodoGracia">
+                                    <option value="0">Sin período de gracia</option>
+                                    <option value="1">1 mes</option>
+                                    <option value="2">2 meses</option>
+                                    <option value="3">3 meses</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="p-3" style="background:#f0faf4; border-radius:12px; border:1px solid #d4edda;">
+                                    <div style="font-size:0.78rem; color:#888;">Cuota mensual estimada</div>
+                                    <div id="cuotaEstimada" style="font-size:1.8rem; font-weight:800; color:#006633;">S/ 0.00</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mt-3" style="font-size:0.83rem; border-radius:10px;">
+                            <i class="bi bi-info-circle me-1"></i>
+                            Tu solicitud será revisada por un analista. Recibirás una notificación cuando sea procesada.
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-success" style="border-radius:20px;">
+                            <i class="bi bi-send me-1"></i>Enviar Solicitud
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function actualizarInfo() {
+    const sel = document.getElementById('selectProducto');
+    const opt = sel.options[sel.selectedIndex];
+    const min = opt.getAttribute('data-min');
+    const max = opt.getAttribute('data-max');
+    if (min && max) {
+        document.getElementById('infoPlazos').textContent = 'Entre ' + min + ' y ' + max + ' meses';
+        document.getElementById('inputPlazo').min = min;
+        document.getElementById('inputPlazo').max = max;
+    }
+    calcularCuota();
+}
+function calcularCuota() {
+    const sel = document.getElementById('selectProducto');
+    const opt = sel.options[sel.selectedIndex];
+    const tcea = parseFloat(opt.getAttribute('data-tcea') || 0);
+    const monto = parseFloat(document.getElementById('inputMonto').value || 0);
+    const plazo = parseInt(document.getElementById('inputPlazo').value || 0);
+    if (tcea > 0 && monto > 0 && plazo > 0) {
+        const i = tcea / 12;
+        const cuota = monto * i / (1 - Math.pow(1 + i, -plazo));
+        document.getElementById('cuotaEstimada').textContent = 'S/ ' + cuota.toFixed(2);
+    }
+}
+</script>
+</body>
+</html>

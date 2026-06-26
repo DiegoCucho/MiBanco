@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yapa | MiBanco Perú</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link th:href="@{/css/mibanco.css}" rel="stylesheet">
+    <style>
+        .yapa-header { background:linear-gradient(135deg,#5a2d82,#7c3aed); border-radius:16px; padding:1.5rem; color:#fff; margin-bottom:1.5rem; }
+        .dest-card { border-radius:12px; padding:0.9rem 1.1rem; font-size:0.88rem; display:none; }
+        .dest-ok   { background:#e8f5e9; border:1.5px solid #4caf50; color:#1b5e20; }
+        .dest-err  { background:#fdecea; border:1.5px solid #ef5350; color:#b71c1c; }
+        .dest-loading { background:#f3f3f3; border:1.5px dashed #aaa; color:#666; }
+        #btnEnviarYapa:disabled { opacity:0.55; cursor:not-allowed; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+<div class="main-content">
+
+    <div th:if="${exito}" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-lightning-charge me-2"></i><span th:text="${exito}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <div class="yapa-header">
+        <h4 style="font-weight:800; margin:0;"><i class="bi bi-lightning-charge me-2"></i>Yapa</h4>
+        <div style="font-size:0.85rem; opacity:0.8; margin-top:0.3rem;">Envía dinero por número de celular, al instante</div>
+        <div style="margin-top:0.75rem;">
+            <span style="font-size:0.75rem; opacity:0.7;">SALDO DISPONIBLE (PEN)</span>
+            <div style="font-size:1.6rem; font-weight:800;">S/ <span th:text="${#numbers.formatDecimal(saldoDisponible, 1, 'COMMA', 2, 'POINT')}">0.00</span></div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Formulario envío -->
+        <div class="col-lg-5">
+            <div class="mb-card">
+                <div class="mb-card-header"><h5><i class="bi bi-send me-2" style="color:#7c3aed;"></i>Enviar Yapa</h5></div>
+                <form th:action="@{/yapa/enviar}" method="post" id="formYapa">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Número de celular destino</label>
+                        <div class="input-group">
+                            <span class="input-group-text">🇵🇪 +51</span>
+                            <input type="tel" class="form-control" name="numeroDestino" id="celularYapa"
+                                   maxlength="9" placeholder="987 654 321" required
+                                   autocomplete="off">
+                        </div>
+                        <!-- Tarjeta de verificación del destinatario -->
+                        <div id="destCard" class="dest-card mt-2">
+                            <span id="destMsg"></span>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Monto (S/)</label>
+                        <input type="number" class="form-control" name="monto" id="montoYapa"
+                               min="1" max="500" step="0.01" placeholder="0.00" required>
+                        <small class="text-muted">Máximo S/ 500.00 por Yapa</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción (opcional)</label>
+                        <input type="text" class="form-control" name="descripcion" placeholder="Ej: Para el almuerzo">
+                    </div>
+                    <button type="submit" id="btnEnviarYapa" disabled
+                            style="width:100%; background:linear-gradient(135deg,#5a2d82,#7c3aed); color:#fff; font-weight:700; border:none; border-radius:50px; padding:0.85rem; font-size:1rem; cursor:pointer;">
+                        <i class="bi bi-lightning-charge me-2"></i>Enviar Yapa
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Historial yapas -->
+        <div class="col-lg-7">
+            <div class="mb-card">
+                <div class="mb-card-header"><h5><i class="bi bi-clock-history me-2" style="color:#7c3aed;"></i>Historial de Yapas</h5></div>
+                <div th:if="${yapas != null and !yapas.isEmpty()}">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle">
+                            <thead><tr><th>Fecha</th><th>Destinatario</th><th>Monto</th><th>Estado</th><th>Ref.</th></tr></thead>
+                            <tbody>
+                            <tr th:each="y : ${yapas}">
+                                <td style="font-size:0.83rem;" th:text="${#temporals.format(y.fecha, 'dd/MM/yyyy HH:mm')}">-</td>
+                                <td>
+                                    <div class="fw-bold" style="font-size:0.85rem;" th:text="${y.numeroDestino}">-</div>
+                                    <small class="text-muted" th:if="${y.clienteDestino != null}"
+                                           th:text="${y.clienteDestino.nombreDisplay}"></small>
+                                    <small class="text-muted" th:if="${y.clienteDestino == null}">Número externo</small>
+                                </td>
+                                <td class="fw-bold text-danger" th:text="${'-S/ ' + #numbers.formatDecimal(y.monto, 1, 'COMMA', 2, 'POINT')}">0</td>
+                                <td><span class="badge bg-success" th:text="${y.estado.name()}">ESTADO</span></td>
+                                <td><small class="text-muted" th:text="${y.referencia}">-</small></td>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div th:if="${yapas == null or yapas.isEmpty()}" class="text-center text-muted py-4">
+                    <i class="bi bi-lightning" style="font-size:2rem; color:#ccc;"></i>
+                    <p class="mt-2">Aún no has enviado Yapas.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function () {
+    const input   = document.getElementById('celularYapa');
+    const card    = document.getElementById('destCard');
+    const msg     = document.getElementById('destMsg');
+    const btnEnviar = document.getElementById('btnEnviarYapa');
+    let debounce  = null;
+
+    function mostrar(tipo, texto) {
+        card.className = 'dest-card mt-2 ' + tipo;
+        card.style.display = 'block';
+        msg.innerHTML = texto;
+    }
+
+    function limpiar() {
+        card.style.display = 'none';
+        btnEnviar.disabled = true;
+    }
+
+    input.addEventListener('input', function () {
+        clearTimeout(debounce);
+        const num = this.value.replace(/\D/g, '');
+        if (num.length < 9) { limpiar(); return; }
+
+        mostrar('dest-loading', '<i class="bi bi-hourglass-split me-1"></i> Verificando número...');
+        btnEnviar.disabled = true;
+
+        debounce = setTimeout(function () {
+            fetch('/yapa/verificar?numero=' + encodeURIComponent(num))
+                .then(r => r.json())
+                .then(data => {
+                    if (data.encontrado) {
+                        if (data.estado === 'ACTIVO') {
+                            mostrar('dest-ok',
+                                '<i class="bi bi-person-check-fill me-1"></i> <strong>' + data.nombre + '</strong> — Cliente Mibanco ✓');
+                            btnEnviar.disabled = false;
+                        } else {
+                            mostrar('dest-err',
+                                '<i class="bi bi-person-x-fill me-1"></i> El cliente existe pero su cuenta está <strong>' + data.estado + '</strong>');
+                            btnEnviar.disabled = true;
+                        }
+                    } else {
+                        mostrar('dest-err',
+                            '<i class="bi bi-exclamation-triangle-fill me-1"></i> ' + data.mensaje);
+                        btnEnviar.disabled = true;
+                    }
+                })
+                .catch(() => {
+                    mostrar('dest-err', '<i class="bi bi-wifi-off me-1"></i> Error al verificar');
+                    btnEnviar.disabled = true;
+                });
+        }, 500);
+    });
+})();
+</script>
+</body>
+</html>

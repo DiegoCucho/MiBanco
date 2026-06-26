@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingresa a tu banca por internet | MiBanco Perú</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link th:href="@{/css/mibanco.css}" rel="stylesheet">
+    <style>
+        body { margin: 0; padding: 0; }
+
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
+        }
+
+        /* Left panel - green */
+        .left-panel {
+            background: linear-gradient(160deg, #006633 0%, #009944 50%, #00b352 100%);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .left-panel::before {
+            content: '';
+            position: absolute; top: -80px; left: -80px;
+            width: 300px; height: 300px; border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+        }
+
+        .left-panel::after {
+            content: '';
+            position: absolute; bottom: -100px; right: -50px;
+            width: 250px; height: 250px; border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+        }
+
+        .left-logo {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 2rem; z-index: 1;
+        }
+
+        .left-logo span {
+            font-size: 2.8rem; font-weight: 900; color: #fff;
+            letter-spacing: -1px;
+        }
+
+        .phone-mockup {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 24px;
+            padding: 1.5rem 1rem;
+            width: 220px; z-index: 1;
+            backdrop-filter: blur(10px);
+        }
+
+        .phone-mockup .mock-header {
+            background: rgba(255,255,255,0.15);
+            border-radius: 10px; padding: 0.6rem 0.8rem;
+            display: flex; align-items: center; gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .mock-balance {
+            text-align: center; color: #fff; margin: 1rem 0 0.5rem;
+        }
+
+        .mock-balance .label { font-size: 0.7rem; opacity: 0.7; }
+        .mock-balance .amount { font-size: 1.8rem; font-weight: 800; }
+
+        .app-badge {
+            display: flex; gap: 0.5rem; margin-top: 2rem; z-index: 1;
+        }
+
+        .store-btn {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 8px; padding: 0.4rem 0.8rem;
+            color: #fff; text-decoration: none;
+            font-size: 0.7rem; font-weight: 600;
+            display: flex; align-items: center; gap: 0.3rem;
+            transition: all 0.2s;
+        }
+
+        .store-btn:hover { background: rgba(255,255,255,0.25); color: #fff; }
+
+        /* Right panel - white, form */
+        .right-panel {
+            width: 480px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem;
+            position: relative;
+        }
+
+        .right-panel .logo-por-internet {
+            text-align: center; margin-bottom: 2rem;
+        }
+
+        .right-panel .logo-por-internet .brand {
+            font-size: 2.2rem; font-weight: 900; color: #006633;
+        }
+
+        .right-panel .logo-por-internet .sub {
+            color: #006633; font-size: 0.95rem; font-weight: 400;
+        }
+
+        .form-label-mb {
+            font-size: 0.85rem; font-weight: 600;
+            color: #333; margin-bottom: 0.35rem;
+        }
+
+        .form-label-mb .hint {
+            font-weight: 400; color: #666; font-size: 0.8rem;
+        }
+
+        .input-mb {
+            border: 1.5px solid #d0d0d0;
+            border-radius: 10px;
+            padding: 0.75rem 1rem 0.75rem 2.8rem;
+            font-size: 0.92rem;
+            width: 100%;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-mb:focus {
+            border-color: #006633;
+            box-shadow: 0 0 0 3px rgba(0,102,51,0.1);
+            outline: none;
+        }
+
+        .input-wrapper {
+            position: relative; margin-bottom: 1.2rem;
+        }
+
+        .input-icon {
+            position: absolute; left: 0.85rem; top: 50%;
+            transform: translateY(-50%);
+            color: #888; font-size: 1rem;
+        }
+
+        .btn-ingresar {
+            background: var(--mb-yellow, #F5C518);
+            color: #1a1a2e; font-weight: 700;
+            font-size: 1rem; border: none;
+            border-radius: 50px; padding: 0.85rem;
+            width: 100%;
+            box-shadow: 0 4px 14px rgba(245,197,24,0.4);
+            transition: all 0.2s; cursor: pointer;
+        }
+
+        .btn-ingresar:hover {
+            background: #d4a914; transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(245,197,24,0.5);
+        }
+
+        .link-green {
+            color: #006633; text-decoration: none;
+            font-size: 0.85rem; font-weight: 600;
+        }
+
+        .link-green:hover { color: #009944; text-decoration: underline; }
+
+        .footer-contact {
+            text-align: center; margin-top: 2rem;
+            font-size: 0.8rem; color: #666;
+        }
+
+        .footer-contact a { color: #006633; font-weight: 700; text-decoration: none; }
+
+        .alert-error {
+            background: #fde8e8; border: 1px solid #f5c6c6;
+            border-radius: 10px; padding: 0.75rem 1rem;
+            color: #c0392b; font-size: 0.85rem;
+            margin-bottom: 1rem;
+            display: flex; align-items: center; gap: 0.5rem;
+        }
+
+        @media (max-width: 768px) {
+            .left-panel { display: none; }
+            .right-panel { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+<div class="login-wrapper">
+
+    <!-- ===== LEFT PANEL ===== -->
+    <div class="left-panel">
+        <div class="left-logo">
+            <svg width="44" height="44" viewBox="0 0 36 36">
+                <polygon points="18,2 21,14 33,14 23,21 27,33 18,26 9,33 13,21 3,14 15,14" fill="#F5C518"/>
+            </svg>
+            <span>mibanco</span>
+        </div>
+
+        <!-- Phone mockup -->
+        <div class="phone-mockup">
+            <div class="mock-header">
+                <svg width="20" height="20" viewBox="0 0 36 36">
+                    <polygon points="18,2 21,14 33,14 23,21 27,33 18,26 9,33 13,21 3,14 15,14" fill="#F5C518"/>
+                </svg>
+                <span style="color:#fff; font-size:0.75rem; font-weight:700;">Hola, Juan 👋</span>
+            </div>
+            <div class="mock-balance">
+                <div class="label">Saldo disponible</div>
+                <div class="amount">S/ 4,280.50</div>
+            </div>
+            <!-- Mini quick actions -->
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem; margin-top:0.75rem;">
+                <div style="background:rgba(255,255,255,0.12); border-radius:8px; padding:0.5rem; text-align:center;">
+                    <div style="color:#F5C518; font-size:1.1rem;">⚡</div>
+                    <div style="color:#fff; font-size:0.65rem; margin-top:2px;">Yapa</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.12); border-radius:8px; padding:0.5rem; text-align:center;">
+                    <div style="color:#F5C518; font-size:1.1rem;">💸</div>
+                    <div style="color:#fff; font-size:0.65rem; margin-top:2px;">Transferir</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.12); border-radius:8px; padding:0.5rem; text-align:center;">
+                    <div style="color:#F5C518; font-size:1.1rem;">📄</div>
+                    <div style="color:#fff; font-size:0.65rem; margin-top:2px;">Préstamo</div>
+                </div>
+                <div style="background:rgba(255,255,255,0.12); border-radius:8px; padding:0.5rem; text-align:center;">
+                    <div style="color:#F5C518; font-size:1.1rem;">💡</div>
+                    <div style="color:#fff; font-size:0.65rem; margin-top:2px;">Pagar</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-white text-center mt-3" style="z-index:1; font-size:0.85rem; opacity:0.8;">
+            ¿No tienes la app Mibanco?
+        </div>
+        <div class="app-badge">
+            <a href="#" class="store-btn"><i class="bi bi-google-play me-1"></i>Google Play</a>
+            <a href="#" class="store-btn"><i class="bi bi-apple me-1"></i>App Store</a>
+        </div>
+    </div>
+
+    <!-- ===== RIGHT PANEL (FORM) ===== -->
+    <div class="right-panel">
+        <div class="logo-por-internet">
+            <div class="brand">mibanco</div>
+            <div class="sub"><i>por internet</i></div>
+        </div>
+
+        <div style="width:100%; max-width:360px;">
+            <h5 style="font-weight:700; color:#222; margin-bottom:1.5rem; font-size:1.25rem;">
+                Ingresa a tu banca<br>por internet
+            </h5>
+
+            <!-- Error alert -->
+            <div class="alert-error" th:if="${error}" th:text="${error}">
+                <i class="bi bi-exclamation-circle-fill"></i>
+                Documento o clave incorrectos.
+            </div>
+
+            <!-- Success/logout message -->
+            <div th:if="${logout}" style="background:#e8f5ee; border:1px solid #a8d5b5; border-radius:10px; padding:0.75rem 1rem; color:#006633; font-size:0.85rem; margin-bottom:1rem;">
+                <i class="bi bi-check-circle-fill me-1"></i> Sesión cerrada correctamente.
+            </div>
+
+            <form th:action="@{/login}" method="post">
+                <!-- Documento -->
+                <label class="form-label-mb">
+                    Número de documento
+                    <span class="hint">(DNI, C.E. o pasaporte)</span>
+                </label>
+                <div class="input-wrapper">
+                    <i class="bi bi-person input-icon"></i>
+                    <input type="text" name="documento" class="input-mb"
+                           placeholder="Ingresa tu DNI" maxlength="15" required autocomplete="off">
+                </div>
+
+                <!-- Tarjeta de débito -->
+                <label class="form-label-mb">
+                    Número de tarjeta de débito
+                    <span class="hint">(16 dígitos)</span>
+                </label>
+                <div class="input-wrapper">
+                    <i class="bi bi-credit-card input-icon"></i>
+                    <input type="text" name="tarjeta" class="input-mb"
+                           placeholder="4334" maxlength="16" autocomplete="off">
+                </div>
+
+                <!-- Recordar -->
+                <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="recordar" name="recordar">
+                    <label class="form-check-label" for="recordar" style="font-size:0.85rem; color:#555;">
+                        Recordar documento y tarjeta
+                    </label>
+                </div>
+
+                <!-- Clave -->
+                <label class="form-label-mb">
+                    Clave de Internet <span class="hint">(6 dígitos)</span>
+                </label>
+                <div class="input-wrapper">
+                    <i class="bi bi-lock input-icon"></i>
+                    <input type="password" name="clave" class="input-mb"
+                           placeholder="••••••" maxlength="6" required>
+                </div>
+
+                <!-- reCAPTCHA simulado -->
+                <div style="border:1px solid #d0d0d0; border-radius:4px; padding:0.8rem 1rem;
+                            display:flex; align-items:center; justify-content:space-between;
+                            margin-bottom:1.5rem; background:#f9f9f9;">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" id="nocaptcha">
+                        <label class="form-check-label" for="nocaptcha" style="font-size:0.85rem;">
+                            No soy un robot
+                        </label>
+                    </div>
+                    <div style="text-align:center;">
+                        <div style="font-size:1.5rem;">🔒</div>
+                        <div style="font-size:0.6rem; color:#888;">reCAPTCHA</div>
+                        <div style="font-size:0.5rem; color:#aaa;">Privacidad - Términos</div>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-ingresar">Ingresar</button>
+            </form>
+
+            <div class="text-center mt-3">
+                <a href="#" class="link-green">Olvidé mi clave por internet ▶</a>
+            </div>
+
+            <div class="footer-contact">
+                ¿Dudas o consultas?<br>
+                Comunícate con nosotros o acércate a la agencia más cercana.<br>
+                <a href="tel:013199999">☎ (01) 319-9999</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

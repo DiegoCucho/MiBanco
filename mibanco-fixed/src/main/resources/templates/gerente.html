@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Gerente | MiBanco Perú</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link th:href="@{/css/mibanco.css}" rel="stylesheet">
+    <style>
+        /* ── Panel Gerente estilos extra ──────────────────── */
+        .gerente-hero {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border-radius: 20px;
+            padding: 2rem 2.5rem;
+            color: #fff;
+            margin-bottom: 1.8rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .gerente-hero::after {
+            content: '';
+            position: absolute;
+            top: -30px; right: -30px;
+            width: 160px; height: 160px;
+            border-radius: 50%;
+            background: rgba(245,197,24,0.08);
+        }
+        .gerente-hero::before {
+            content: '';
+            position: absolute;
+            bottom: -50px; right: 80px;
+            width: 220px; height: 220px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.04);
+        }
+        .kpi-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 1.2rem 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            border-left: 4px solid transparent;
+            transition: transform 0.15s, box-shadow 0.15s;
+            height: 100%;
+        }
+        .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); }
+        .kpi-card.green  { border-left-color: #198754; }
+        .kpi-card.blue   { border-left-color: #0d6efd; }
+        .kpi-card.yellow { border-left-color: #ffc107; }
+        .kpi-card.red    { border-left-color: #dc3545; }
+        .kpi-card.teal   { border-left-color: #20c997; }
+        .kpi-card.orange { border-left-color: #fd7e14; }
+        .kpi-icon {
+            width: 48px; height: 48px;
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
+            flex-shrink: 0;
+        }
+        .kpi-icon.green  { background:#d1e7dd; color:#198754; }
+        .kpi-icon.blue   { background:#cfe2ff; color:#0d6efd; }
+        .kpi-icon.yellow { background:#fff3cd; color:#856404; }
+        .kpi-icon.red    { background:#f8d7da; color:#dc3545; }
+        .kpi-icon.teal   { background:#d2f4ea; color:#20c997; }
+        .kpi-icon.orange { background:#ffe5d0; color:#fd7e14; }
+        .kpi-num  { font-size: 1.9rem; font-weight: 800; line-height: 1; color: #1a1a2e; }
+        .kpi-lbl  { font-size: 0.75rem; color: #6c757d; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .section-card {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+            overflow: hidden;
+            margin-bottom: 1.5rem;
+        }
+        .section-header {
+            padding: 1rem 1.4rem;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fafafa;
+        }
+        .section-header h5 { margin: 0; font-weight: 700; font-size: 0.95rem; color: #1a1a2e; }
+        .section-body { padding: 0; }
+
+        .tab-gerente .nav-link {
+            border-radius: 10px 10px 0 0;
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #6c757d;
+            border: none;
+            padding: 0.6rem 1.2rem;
+        }
+        .tab-gerente .nav-link.active {
+            background: #fff;
+            color: #1a1a2e;
+            border-bottom: 3px solid #F5C518;
+        }
+        .tab-gerente .nav-link:hover:not(.active) { background: #f8f9fa; }
+
+        .badge-estado {
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 0.35em 0.65em;
+            border-radius: 8px;
+        }
+        .cartera-bar {
+            height: 8px;
+            border-radius: 4px;
+            background: #e9ecef;
+            overflow: hidden;
+        }
+        .cartera-bar-fill {
+            height: 100%;
+            border-radius: 4px;
+            background: linear-gradient(90deg, #198754, #20c997);
+        }
+        .alert-moroso {
+            background: #fff5f5;
+            border-left: 4px solid #dc3545;
+            border-radius: 12px;
+            padding: 0.9rem 1.2rem;
+            margin-bottom: 0.6rem;
+        }
+        .pending-item {
+            padding: 1rem 1.4rem;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .pending-item:last-child { border-bottom: none; }
+        .pending-avatar {
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0f3460, #1a1a2e);
+            color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 800; font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        table.gerente-table th {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            color: #6c757d;
+            font-weight: 700;
+            background: #f8f9fa;
+            border: none;
+            padding: 0.7rem 0.9rem;
+        }
+        table.gerente-table td {
+            font-size: 0.85rem;
+            padding: 0.7rem 0.9rem;
+            vertical-align: middle;
+            border-color: #f0f0f0;
+        }
+        .riesgo-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 0.25em 0.7em;
+            border-radius: 20px;
+            font-size: 0.72rem;
+            font-weight: 700;
+        }
+        .riesgo-ok    { background: #d1e7dd; color: #198754; }
+        .riesgo-warn  { background: #fff3cd; color: #856404; }
+        .riesgo-alto  { background: #f8d7da; color: #dc3545; }
+    </style>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+<div class="main-content">
+
+    <!-- Alertas flash -->
+    <div th:if="${exito}" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i><span th:text="${exito}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- ══ HERO ══════════════════════════════════════════════ -->
+    <div class="gerente-hero mb-4">
+        <div class="row align-items-center">
+            <div class="col">
+                <div style="font-size:0.78rem; opacity:0.6; margin-bottom:0.3rem; letter-spacing:1px; text-transform:uppercase;">
+                    <i class="bi bi-building me-1"></i>MiBanco Perú — Sistema Interno
+                </div>
+                <h3 style="font-weight:900; margin:0; font-size:1.6rem;">
+                    Panel de Gerencia <span style="color:#F5C518;">/ Analista</span>
+                </h3>
+                <div style="font-size:0.85rem; opacity:0.7; margin-top:0.4rem;">
+                    Supervisión de cartera, solicitudes y clientes · Banca minorista y MYPE
+                </div>
+            </div>
+            <div class="col-auto d-none d-md-flex align-items-center gap-3">
+                <div style="text-align:right;">
+                    <div style="font-size:0.7rem; opacity:0.6; letter-spacing:1px;">CARTERA ACTIVA</div>
+                    <div style="font-size:1.7rem; font-weight:900; color:#F5C518;">
+                        S/ <span th:text="${#numbers.formatDecimal(stats.carteraTotal, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                    </div>
+                </div>
+                <div style="width:1px; height:50px; background:rgba(255,255,255,0.15);"></div>
+                <div style="text-align:center;">
+                    <div style="font-size:0.7rem; opacity:0.6; letter-spacing:1px;">SOLICITUDES</div>
+                    <div style="font-size:1.7rem; font-weight:900; color:#fd7e14;" th:text="${stats.pendientes}">0</div>
+                    <div style="font-size:0.7rem; opacity:0.6;">PENDIENTES</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ KPIs ══════════════════════════════════════════════ -->
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="kpi-card green">
+                <div class="kpi-icon green"><i class="bi bi-people-fill"></i></div>
+                <div>
+                    <div class="kpi-num" th:text="${stats.clientesActivos}">0</div>
+                    <div class="kpi-lbl">Clientes activos</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="kpi-card yellow">
+                <div class="kpi-icon yellow"><i class="bi bi-hourglass-split"></i></div>
+                <div>
+                    <div class="kpi-num" th:text="${stats.pendientes}">0</div>
+                    <div class="kpi-lbl">Pendientes</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="kpi-card blue">
+                <div class="kpi-icon blue"><i class="bi bi-check-circle-fill"></i></div>
+                <div>
+                    <div class="kpi-num" th:text="${stats.aprobados}">0</div>
+                    <div class="kpi-lbl">Aprobados</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="kpi-card teal">
+                <div class="kpi-icon teal"><i class="bi bi-cash-stack"></i></div>
+                <div>
+                    <div class="kpi-num" th:text="${stats.desembolsados}">0</div>
+                    <div class="kpi-lbl">Desembolsados</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="kpi-card red">
+                <div class="kpi-icon red"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                <div>
+                    <div class="kpi-num" th:text="${stats.morosos}">0</div>
+                    <div class="kpi-lbl">Morosos</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-lg-2">
+            <div class="kpi-card orange">
+                <div class="kpi-icon orange"><i class="bi bi-bar-chart-fill"></i></div>
+                <div>
+                    <div class="kpi-num" th:text="${stats.totalPrestamos}">0</div>
+                    <div class="kpi-lbl">Total préstamos</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ CARTERA + RATIO MORA (estilo Banco Andino) ════════ -->
+    <div class="row g-3 mb-4">
+        <!-- Vigente -->
+        <div class="col-6 col-md-3">
+            <div style="background:#fff; border-radius:14px; padding:1.1rem 1.3rem; box-shadow:0 2px 10px rgba(0,0,0,0.07); border-top:4px solid #198754;">
+                <div style="font-size:0.7rem; color:#6c757d; font-weight:700; letter-spacing:0.5px; text-transform:uppercase;">Cartera vigente</div>
+                <div style="font-size:1.4rem; font-weight:800; color:#198754; margin-top:0.3rem;">
+                    S/ <span th:text="${#numbers.formatDecimal(stats.carteraVigente, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                </div>
+            </div>
+        </div>
+        <!-- Vencida -->
+        <div class="col-6 col-md-3">
+            <div style="background:#fff; border-radius:14px; padding:1.1rem 1.3rem; box-shadow:0 2px 10px rgba(0,0,0,0.07); border-top:4px solid #dc3545;">
+                <div style="font-size:0.7rem; color:#6c757d; font-weight:700; letter-spacing:0.5px; text-transform:uppercase;">Cartera vencida</div>
+                <div style="font-size:1.4rem; font-weight:800; color:#dc3545; margin-top:0.3rem;">
+                    S/ <span th:text="${#numbers.formatDecimal(stats.carteraVencida, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                </div>
+            </div>
+        </div>
+        <!-- Ratio de mora -->
+        <div class="col-6 col-md-3">
+            <div style="background:#fff; border-radius:14px; padding:1.1rem 1.3rem; box-shadow:0 2px 10px rgba(0,0,0,0.07); border-top:4px solid #fd7e14;">
+                <div style="font-size:0.7rem; color:#6c757d; font-weight:700; letter-spacing:0.5px; text-transform:uppercase;">Ratio de mora</div>
+                <div style="font-size:1.4rem; font-weight:800; margin-top:0.3rem;"
+                     th:classappend="${stats.ratioMora > 10 ? 'text-danger' : 'text-success'}">
+                    <span th:text="${stats.ratioMora}">0</span>%
+                </div>
+                <div style="font-size:0.72rem; color:#6c757d;">Cartera vencida / total</div>
+            </div>
+        </div>
+        <!-- Gráfico torta -->
+        <div class="col-6 col-md-3">
+            <div style="background:#fff; border-radius:14px; padding:1rem 1.3rem; box-shadow:0 2px 10px rgba(0,0,0,0.07); display:flex; flex-direction:column; align-items:center;">
+                <div style="font-size:0.7rem; color:#6c757d; font-weight:700; letter-spacing:0.5px; text-transform:uppercase; align-self:flex-start; margin-bottom:0.5rem;">Composición cartera</div>
+                <canvas id="cartPie" width="110" height="110"></canvas>
+                <div style="display:flex; gap:1rem; margin-top:0.5rem; font-size:0.72rem; font-weight:600;">
+                    <span style="color:#198754;"><span style="display:inline-block;width:10px;height:10px;background:#198754;border-radius:50%;margin-right:3px;"></span>Vigente</span>
+                    <span style="color:#dc3545;"><span style="display:inline-block;width:10px;height:10px;background:#dc3545;border-radius:50%;margin-right:3px;"></span>Vencida</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ TABS PRINCIPALES ═══════════════════════════════════ -->
+    <ul class="nav tab-gerente mb-0 border-bottom border-2" id="gerenteTabs">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-solicitudes">
+                <i class="bi bi-hourglass me-1"></i>Solicitudes
+                <span class="badge bg-warning text-dark ms-1" th:text="${pendientes.size()}">0</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-morosos">
+                <i class="bi bi-exclamation-triangle me-1"></i>Morosos
+                <span class="badge bg-danger ms-1" th:text="${morosos.size()}">0</span>
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-cartera">
+                <i class="bi bi-briefcase me-1"></i>Cartera activa
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-clientes">
+                <i class="bi bi-people me-1"></i>Todos los clientes
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-historial">
+                <i class="bi bi-clock-history me-1"></i>Historial completo
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" style="background:#fff; border-radius:0 16px 16px 16px; box-shadow:0 2px 12px rgba(0,0,0,0.07); overflow:hidden;">
+
+        <!-- ─── TAB: SOLICITUDES PENDIENTES ─────────────────── -->
+        <div class="tab-pane fade show active" id="tab-solicitudes">
+            <div class="p-3 border-bottom d-flex align-items-center justify-content-between" style="background:#fffdf0;">
+                <span style="font-size:0.85rem; color:#856404;">
+                    <i class="bi bi-info-circle me-1"></i>
+                    <strong>Flujo real:</strong> El analista verifica historial del cliente antes de aprobar. Sin morosidad activa → se puede aprobar.
+                </span>
+                <a href="/admin/prestamos" class="btn btn-sm" style="background:#1a1a2e; color:#F5C518; border-radius:20px; font-weight:700; font-size:0.8rem;">
+                    <i class="bi bi-shield-lock me-1"></i>Ir a aprobar / rechazar
+                </a>
+            </div>
+
+            <!-- Sin solicitudes -->
+            <div th:if="${pendientes == null or pendientes.isEmpty()}" class="text-center py-5 text-muted">
+                <i class="bi bi-inbox fs-1 d-block mb-2"></i>
+                No hay solicitudes pendientes. ¡Todo al día!
+            </div>
+
+            <!-- Lista solicitudes -->
+            <div th:each="p : ${pendientes}" class="pending-item">
+                <div class="pending-avatar"
+                     th:text="${p.cliente.nombreCompleto != null ? p.cliente.nombreCompleto.substring(0,1) : p.cliente.razonSocial.substring(0,1)}">C</div>
+                <div class="flex-grow-1">
+                    <div class="fw-bold" style="font-size:0.9rem;"
+                         th:text="${p.cliente.nombreCompleto != null ? p.cliente.nombreCompleto : p.cliente.razonSocial}">Cliente</div>
+                    <div style="font-size:0.78rem; color:#6c757d;">
+                        <span th:text="${p.cliente.dni != null ? 'DNI ' + p.cliente.dni : 'RUC ' + p.cliente.ruc}">Doc</span>
+                        · <span th:text="${p.producto.nombre}">Producto</span>
+                        · <span th:text="${p.plazoMeses} + ' meses'">Plazo</span>
+                        · Solicitado: <span th:text="${p.fechaSolicitud}">-</span>
+                    </div>
+                </div>
+                <div class="text-end">
+                    <div class="fw-bold text-success" style="font-size:1.05rem;"
+                         th:text="'S/ ' + ${#numbers.formatDecimal(p.montoTotal, 1, 'COMMA', 2, 'POINT')}">S/ 0</div>
+                    <div style="font-size:0.75rem; color:#6c757d;"
+                         th:text="'Cuota: S/ ' + ${#numbers.formatDecimal(p.cuotaMensual, 1, 'COMMA', 2, 'POINT')}">-</div>
+                </div>
+                <div>
+                    <span class="badge bg-warning text-dark">PENDIENTE</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ─── TAB: MOROSOS ──────────────────────────────────── -->
+        <div class="tab-pane fade" id="tab-morosos">
+            <div class="p-3 border-bottom" style="background:#fff5f5;">
+                <span style="font-size:0.85rem; color:#842029;">
+                    <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                    Clientes con cuotas vencidas. Contactar para regularizar situación.
+                    Los clientes morosos <strong>no califican para nuevos préstamos</strong>.
+                </span>
+            </div>
+
+            <div th:if="${morosos == null or morosos.isEmpty()}" class="text-center py-5 text-muted">
+                <i class="bi bi-emoji-smile fs-1 d-block mb-2 text-success"></i>
+                Sin clientes morosos actualmente. ¡Excelente cartera!
+            </div>
+
+            <div class="table-responsive" th:if="${morosos != null and !morosos.isEmpty()}">
+                <table class="table gerente-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Cliente</th>
+                            <th>Documento</th>
+                            <th>Contacto</th>
+                            <th>Producto</th>
+                            <th>Monto original</th>
+                            <th>Cuota</th>
+                            <th>Estado</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${morosos}">
+                            <td class="fw-bold text-muted" th:text="${p.id}">0</td>
+                            <td>
+                                <div class="fw-bold"
+                                     th:text="${p.cliente.nombreCompleto != null ? p.cliente.nombreCompleto : p.cliente.razonSocial}">-</div>
+                                <small class="text-muted" th:text="${p.cliente.ciudad}">-</small>
+                            </td>
+                            <td>
+                                <span th:if="${p.cliente.dni != null}" th:text="'DNI: ' + ${p.cliente.dni}">-</span>
+                                <span th:if="${p.cliente.ruc != null}" th:text="'RUC: ' + ${p.cliente.ruc}">-</span>
+                            </td>
+                            <td>
+                                <a th:href="'tel:' + ${p.cliente.telefono}"
+                                   th:text="${p.cliente.telefono}"
+                                   style="text-decoration:none; color:#0d6efd; font-size:0.82rem;">-</a>
+                            </td>
+                            <td th:text="${p.producto.nombre}">-</td>
+                            <td class="fw-bold text-danger"
+                                th:text="'S/ ' + ${#numbers.formatDecimal(p.montoTotal, 1, 'COMMA', 2, 'POINT')}">-</td>
+                            <td th:text="'S/ ' + ${#numbers.formatDecimal(p.cuotaMensual, 1, 'COMMA', 2, 'POINT')}">-</td>
+                            <td><span class="badge bg-danger">MOROSO</span></td>
+                            <td>
+                                <a th:href="@{/prestamos/{id}/cuotas(id=${p.id})}"
+                                   class="btn btn-sm btn-outline-danger" style="border-radius:20px; font-size:0.77rem;">
+                                    <i class="bi bi-list-check me-1"></i>Ver cuotas
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ─── TAB: CARTERA ACTIVA ──────────────────────────── -->
+        <div class="tab-pane fade" id="tab-cartera">
+            <div class="p-3 border-bottom d-flex align-items-center justify-content-between" style="background:#f0fff4;">
+                <span style="font-size:0.85rem; color:#155724;">
+                    <i class="bi bi-briefcase me-1"></i>
+                    Préstamos desembolsados y en curso. Cartera total:
+                    <strong th:text="'S/ ' + ${#numbers.formatDecimal(stats.carteraTotal, 1, 'COMMA', 2, 'POINT')}">-</strong>
+                </span>
+            </div>
+
+            <div th:if="${activos == null or activos.isEmpty()}" class="text-center py-5 text-muted">
+                <i class="bi bi-folder2-open fs-1 d-block mb-2"></i>
+                No hay préstamos activos.
+            </div>
+
+            <div class="table-responsive" th:if="${activos != null and !activos.isEmpty()}">
+                <table class="table gerente-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Cliente</th>
+                            <th>Producto</th>
+                            <th>Monto</th>
+                            <th>Cuota</th>
+                            <th>Plazo</th>
+                            <th>TCEA</th>
+                            <th>Desembolso</th>
+                            <th>Riesgo</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${activos}">
+                            <td class="fw-bold text-muted" th:text="${p.id}">0</td>
+                            <td>
+                                <div class="fw-bold" style="font-size:0.85rem;"
+                                     th:text="${p.cliente.nombreCompleto != null ? p.cliente.nombreCompleto : p.cliente.razonSocial}">-</div>
+                                <small class="text-muted"
+                                       th:text="${p.cliente.dni != null ? 'DNI ' + p.cliente.dni : 'RUC ' + p.cliente.ruc}">-</small>
+                            </td>
+                            <td th:text="${p.producto.nombre}" style="font-size:0.83rem;">-</td>
+                            <td class="fw-bold text-success"
+                                th:text="'S/ ' + ${#numbers.formatDecimal(p.montoTotal, 1, 'COMMA', 2, 'POINT')}">-</td>
+                            <td th:text="'S/ ' + ${#numbers.formatDecimal(p.cuotaMensual, 1, 'COMMA', 2, 'POINT')}" style="font-size:0.83rem;">-</td>
+                            <td th:text="${p.plazoMeses} + ' m'" style="font-size:0.83rem;">-</td>
+                            <td>
+                                <span th:if="${p.tcea != null}"
+                                      th:text="${#numbers.formatDecimal(p.tcea * 100, 1, 'COMMA', 1, 'POINT')} + '%'"
+                                      style="font-size:0.82rem; font-weight:700; color:#0f3460;">-</span>
+                                <span th:if="${p.tcea == null}" class="text-muted" style="font-size:0.8rem;">-</span>
+                            </td>
+                            <td th:text="${p.fechaDesembolso != null ? p.fechaDesembolso : '-'}" style="font-size:0.82rem;">-</td>
+                            <td>
+                                <span class="riesgo-badge riesgo-alto" th:if="${p.estado.name() == 'MOROSO'}">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> Alto
+                                </span>
+                                <span class="riesgo-badge riesgo-ok" th:if="${p.estado.name() == 'DESEMBOLSADO'}">
+                                    <i class="bi bi-check-circle-fill"></i> Normal
+                                </span>
+                            </td>
+                            <td>
+                                <a th:href="@{/prestamos/{id}/cuotas(id=${p.id})}"
+                                   class="btn btn-sm btn-outline-secondary" style="border-radius:20px; font-size:0.75rem;">
+                                    <i class="bi bi-list-check"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ─── TAB: TODOS LOS CLIENTES ──────────────────────── -->
+        <div class="tab-pane fade" id="tab-clientes">
+            <!-- Búsqueda rápida -->
+            <div class="p-3 border-bottom">
+                <input type="text" id="buscarCliente" class="form-control" placeholder="🔍  Buscar por nombre, DNI o RUC..."
+                       style="border-radius:20px; max-width:400px; font-size:0.88rem;">
+            </div>
+
+            <div th:if="${clientes == null or clientes.isEmpty()}" class="text-center py-5 text-muted">
+                Sin clientes registrados.
+            </div>
+
+            <div class="table-responsive" th:if="${clientes != null and !clientes.isEmpty()}">
+                <table class="table gerente-table mb-0" id="tablaClientes">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre / Razón social</th>
+                            <th>Tipo</th>
+                            <th>Documento</th>
+                            <th>Ciudad</th>
+                            <th>Contacto</th>
+                            <th>Estado</th>
+                            <th>Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="c : ${clientes}" class="fila-cliente">
+                            <td class="text-muted fw-bold" th:text="${c.id}">0</td>
+                            <td>
+                                <div class="fw-bold" style="font-size:0.87rem;"
+                                     th:text="${c.nombreCompleto != null ? c.nombreCompleto : c.razonSocial}">-</div>
+                                <small class="text-muted" th:text="${c.email != null ? c.email : ''}">-</small>
+                            </td>
+                            <td>
+                                <span class="badge" style="font-size:0.7rem;"
+                                      th:classappend="${c.tipoPersona.name() == 'NATURAL' ? 'bg-primary-subtle text-primary' : 'bg-success-subtle text-success'}"
+                                      th:text="${c.tipoPersona.name() == 'NATURAL' ? 'Persona' : 'Empresa'}">-</span>
+                            </td>
+                            <td style="font-size:0.82rem;">
+                                <span th:if="${c.dni != null}" th:text="'DNI ' + ${c.dni}">-</span>
+                                <span th:if="${c.ruc != null}" th:text="'RUC ' + ${c.ruc}">-</span>
+                            </td>
+                            <td style="font-size:0.82rem;" th:text="${c.ciudad != null ? c.ciudad : '-'}">-</td>
+                            <td style="font-size:0.82rem;" th:text="${c.telefono != null ? c.telefono : '-'}">-</td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${c.estado.name() == 'ACTIVO' ? 'bg-success' : (c.estado.name() == 'BLOQUEADO' ? 'bg-danger' : 'bg-secondary')}"
+                                      th:text="${c.estado.name()}">-</span>
+                            </td>
+                            <td style="font-size:0.78rem; color:#6c757d;"
+                                th:text="${#temporals.format(c.fechaRegistro, 'dd/MM/yyyy')}">-</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ─── TAB: HISTORIAL COMPLETO ──────────────────────── -->
+        <div class="tab-pane fade" id="tab-historial">
+            <div class="p-3 border-bottom d-flex align-items-center justify-content-between" style="background:#f8f9fa;">
+                <span style="font-size:0.85rem; color:#495057;">
+                    <i class="bi bi-clock-history me-1"></i>
+                    Todas las solicitudes de préstamo registradas en el sistema.
+                </span>
+                <span class="badge bg-secondary" th:text="${todosPresta.size()} + ' solicitudes'">0</span>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table gerente-table mb-0">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Cliente</th>
+                            <th>Producto</th>
+                            <th>Monto</th>
+                            <th>Cuota</th>
+                            <th>Plazo</th>
+                            <th>Solicitud</th>
+                            <th>Aprobación</th>
+                            <th>Desembolso</th>
+                            <th>Estado</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="p : ${todosPresta}">
+                            <td class="text-muted fw-bold" th:text="${p.id}">0</td>
+                            <td>
+                                <div class="fw-bold" style="font-size:0.84rem;"
+                                     th:text="${p.cliente.nombreCompleto != null ? p.cliente.nombreCompleto : p.cliente.razonSocial}">-</div>
+                                <small class="text-muted"
+                                       th:text="${p.cliente.dni != null ? 'DNI ' + p.cliente.dni : 'RUC ' + p.cliente.ruc}">-</small>
+                            </td>
+                            <td style="font-size:0.82rem;" th:text="${p.producto.nombre}">-</td>
+                            <td class="fw-bold"
+                                th:text="'S/ ' + ${#numbers.formatDecimal(p.montoTotal, 1, 'COMMA', 2, 'POINT')}"
+                                th:classappend="${p.estado.name() == 'MOROSO' ? ' text-danger' : ' text-success'}">-</td>
+                            <td style="font-size:0.82rem;"
+                                th:text="'S/ ' + ${#numbers.formatDecimal(p.cuotaMensual, 1, 'COMMA', 2, 'POINT')}">-</td>
+                            <td style="font-size:0.82rem;" th:text="${p.plazoMeses} + ' m'">-</td>
+                            <td style="font-size:0.78rem;" th:text="${p.fechaSolicitud}">-</td>
+                            <td style="font-size:0.78rem;" th:text="${p.fechaAprobacion != null ? p.fechaAprobacion : '—'}">-</td>
+                            <td style="font-size:0.78rem;" th:text="${p.fechaDesembolso != null ? p.fechaDesembolso : '—'}">-</td>
+                            <td>
+                                <span class="badge"
+                                      th:classappend="${p.estado.name() == 'PENDIENTE'    ? 'bg-warning text-dark' :
+                                                      (p.estado.name() == 'APROBADO'     ? 'bg-info'      :
+                                                      (p.estado.name() == 'DESEMBOLSADO' ? 'bg-success'   :
+                                                      (p.estado.name() == 'MOROSO'       ? 'bg-danger'    : 'bg-secondary')))}"
+                                      th:text="${p.estado.name()}">-</span>
+                            </td>
+                        </tr>
+                        <tr th:if="${todosPresta == null or todosPresta.isEmpty()}">
+                            <td colspan="10" class="text-center text-muted py-4">Sin registros.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div><!-- /tab-content -->
+
+    <!-- ══ FOOTER ACCIONES RÁPIDAS ═══════════════════════════ -->
+    <div class="row g-3 mt-2">
+        <div class="col-12">
+            <div style="background:#f8f9fa; border-radius:16px; padding:1rem 1.5rem; display:flex; align-items:center; flex-wrap:wrap; gap:0.8rem;">
+                <span style="font-size:0.82rem; font-weight:700; color:#495057; margin-right:0.5rem;">Acciones rápidas:</span>
+                <a href="/admin/prestamos" class="btn btn-sm" style="background:#1a1a2e; color:#F5C518; border-radius:20px; font-weight:600; font-size:0.8rem;">
+                    <i class="bi bi-shield-lock me-1"></i>Aprobar / Rechazar préstamos
+                </a>
+                <a href="/simulador" class="btn btn-sm btn-outline-secondary" style="border-radius:20px; font-size:0.8rem;">
+                    <i class="bi bi-calculator me-1"></i>Simulador de cuotas
+                </a>
+                <a href="/dashboard" class="btn btn-sm btn-outline-secondary" style="border-radius:20px; font-size:0.8rem;">
+                    <i class="bi bi-house me-1"></i>Volver al inicio
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div><!-- /main-content -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script th:inline="javascript">
+    // Gráfico torta vigente vs vencida
+    const vigente = /*[[${stats.carteraVigente}]]*/ 0;
+    const vencida = /*[[${stats.carteraVencida}]]*/ 0;
+    const ctx = document.getElementById('cartPie');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Vigente', 'Vencida'],
+                datasets: [{
+                    data: [vigente, vencida],
+                    backgroundColor: ['#198754', '#dc3545'],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                plugins: { legend: { display: false } },
+                cutout: '60%',
+                responsive: false
+            }
+        });
+    }
+
+    // Búsqueda en tabla de clientes
+    document.getElementById('buscarCliente')?.addEventListener('input', function () {
+        const q = this.value.toLowerCase();
+        document.querySelectorAll('#tablaClientes .fila-cliente').forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    });
+
+    // Resaltar tab activo según hash
+    const hash = window.location.hash;
+    if (hash) {
+        const tab = document.querySelector('[data-bs-target="' + hash + '"]');
+        if (tab) new bootstrap.Tab(tab).show();
+    }
+</script>
+</body>
+</html>

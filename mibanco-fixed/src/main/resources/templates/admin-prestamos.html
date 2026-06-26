@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin — Préstamos | MiBanco Perú</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link th:href="@{/css/mibanco.css}" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+<div class="main-content">
+
+    <div th:if="${exito}" class="alert alert-success alert-dismissible fade show">
+        <i class="bi bi-check-circle me-2"></i><span th:text="${exito}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show">
+        <i class="bi bi-exclamation-triangle me-2"></i><span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Header admin -->
+    <div style="background:linear-gradient(135deg,#856404,#d4a914); border-radius:18px; padding:1.5rem 2rem; color:#fff; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:space-between;">
+        <div>
+            <h4 style="font-weight:800; margin:0;"><i class="bi bi-shield-lock me-2"></i>Panel de Administración — Préstamos</h4>
+            <div style="font-size:0.85rem; opacity:0.85; margin-top:0.3rem;">Gestión de solicitudes de crédito</div>
+        </div>
+        <div style="text-align:center;">
+            <div style="font-size:0.72rem; opacity:0.7;">PENDIENTES</div>
+            <div style="font-size:2rem; font-weight:800;" th:text="${pendientes}">0</div>
+        </div>
+    </div>
+
+    <a href="/dashboard" class="btn btn-outline-secondary mb-3" style="border-radius:20px;">
+        <i class="bi bi-arrow-left me-1"></i>Volver al Dashboard
+    </a>
+
+    <!-- Tabla de préstamos -->
+    <div class="mb-card">
+        <div class="mb-card-header">
+            <h5><i class="bi bi-list-check me-2"></i>Todas las solicitudes</h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th>#</th>
+                        <th>Cliente</th>
+                        <th>Producto</th>
+                        <th>Monto</th>
+                        <th>Cuota</th>
+                        <th>Plazo</th>
+                        <th>Fecha Solicitud</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                <tr th:each="p : ${prestamos}">
+                    <td class="fw-bold" th:text="${p.id}">0</td>
+                    <td>
+                        <div class="fw-bold" style="font-size:0.88rem;" th:text="${p.cliente.nombreCompleto != null ? p.cliente.nombreCompleto : p.cliente.razonSocial}">Cliente</div>
+                        <small class="text-muted" th:text="${p.cliente.dni != null ? 'DNI: ' + p.cliente.dni : 'RUC: ' + p.cliente.ruc}">Doc</small>
+                    </td>
+                    <td style="font-size:0.85rem;" th:text="${p.producto.nombre}">Producto</td>
+                    <td class="fw-bold text-success" th:text="${'S/ ' + #numbers.formatDecimal(p.montoTotal, 1, 'COMMA', 2, 'POINT')}">0</td>
+                    <td th:text="${'S/ ' + #numbers.formatDecimal(p.cuotaMensual, 1, 'COMMA', 2, 'POINT')}">0</td>
+                    <td th:text="${p.plazoMeses} + ' m'">0</td>
+                    <td style="font-size:0.83rem;" th:text="${p.fechaSolicitud}">-</td>
+                    <td>
+                        <span class="badge"
+                              th:classappend="${p.estado.name() == 'PENDIENTE' ? 'bg-warning text-dark' :
+                                              (p.estado.name() == 'APROBADO' ? 'bg-info' :
+                                              (p.estado.name() == 'DESEMBOLSADO' ? 'bg-success' :
+                                              (p.estado.name() == 'MOROSO' ? 'bg-danger' : 'bg-secondary')))}"
+                              th:text="${p.estado.name()}">ESTADO</span>
+                    </td>
+                    <td>
+                        <!-- Aprobar/Rechazar si PENDIENTE -->
+                        <div th:if="${p.estado.name() == 'PENDIENTE'}" class="d-flex gap-1">
+                            <form th:action="@{/admin/prestamos/{id}/aprobar(id=${p.id})}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-success btn-sm" style="border-radius:20px;"
+                                        onclick="return confirm('¿Aprobar préstamo #' + [[${p.id}]] + '?')">
+                                    <i class="bi bi-check-lg"></i> Aprobar
+                                </button>
+                            </form>
+                            <form th:action="@{/admin/prestamos/{id}/rechazar(id=${p.id})}" method="post" style="display:inline;">
+                                <button type="submit" class="btn btn-danger btn-sm" style="border-radius:20px;"
+                                        onclick="return confirm('¿Rechazar préstamo #' + [[${p.id}]] + '?')">
+                                    <i class="bi bi-x-lg"></i> Rechazar
+                                </button>
+                            </form>
+                        </div>
+                        <!-- Desembolsar si APROBADO -->
+                        <div th:if="${p.estado.name() == 'APROBADO'}">
+                            <form th:action="@{/admin/prestamos/{id}/desembolsar(id=${p.id})}" method="post">
+                                <button type="submit" class="btn btn-primary btn-sm" style="border-radius:20px;"
+                                        onclick="return confirm('¿Desembolsar S/ ' + [[${p.montoTotal}]] + ' al cliente?')">
+                                    <i class="bi bi-cash me-1"></i>Desembolsar
+                                </button>
+                            </form>
+                        </div>
+                        <!-- Sin acción si ya está en otro estado -->
+                        <span th:if="${p.estado.name() != 'PENDIENTE' and p.estado.name() != 'APROBADO'}"
+                              class="text-muted" style="font-size:0.8rem;">Sin acción</span>
+                    </td>
+                </tr>
+                <tr th:if="${prestamos == null or prestamos.isEmpty()}">
+                    <td colspan="9" class="text-center text-muted py-4">No hay solicitudes de préstamo.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

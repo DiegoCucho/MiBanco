@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Crédito | MiBanco Perú</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link th:href="@{/css/mibanco.css}" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+
+<div class="main-content">
+    <div class="page-header">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/dashboard" class="text-green">Inicio</a></li>
+                <li class="breadcrumb-item active">Simulador de Crédito</li>
+            </ol>
+        </nav>
+        <h2><i class="bi bi-calculator me-2"></i>Simulador de Crédito</h2>
+        <p class="text-muted" style="font-size:0.88rem;">Sistema de cuota francesa • TCEA máxima: 90.84%</p>
+    </div>
+
+    <div class="row g-4">
+        <!-- Form -->
+        <div class="col-lg-5">
+            <div class="mb-card">
+                <div class="mb-card-header">
+                    <h5><i class="bi bi-sliders me-2 text-green"></i>Parámetros del Crédito</h5>
+                </div>
+
+                <!-- Producto -->
+                <div class="mb-3">
+                    <label class="form-label fw-600" style="font-size:0.85rem; font-weight:600;">
+                        Producto crediticio
+                    </label>
+                    <select class="form-select" id="selectProducto" onchange="autoFillTasa()"
+                            style="border-radius:10px; font-size:0.88rem;">
+                        <option value="3.5" data-min="3" data-max="36">Micapital</option>
+                        <option value="2.8" data-min="3" data-max="24">Miequipo</option>
+                        <option value="1.5" data-min="12" data-max="120">Milocal</option>
+                        <option value="1.2" data-min="12" data-max="240">Mivivienda</option>
+                        <option value="1.8" data-min="12" data-max="180">Micasa</option>
+                        <option value="1.0" data-min="24" data-max="360">Mihipoteca</option>
+                        <option value="3.0" data-min="3" data-max="18">Agropecuario Rural</option>
+                        <option value="2.5" data-min="6" data-max="48">Mercado/Galerías</option>
+                        <option value="5.0" data-min="1" data-max="12">Efectivo Altoque</option>
+                    </select>
+                </div>
+
+                <!-- Monto -->
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.85rem; font-weight:600;">
+                        Monto del préstamo (S/)
+                    </label>
+                    <div class="position-relative">
+                        <span style="position:absolute; left:0.85rem; top:50%; transform:translateY(-50%);
+                                     font-weight:700; color:#006633;">S/</span>
+                        <input type="number" id="montoInput" class="form-control"
+                               style="padding-left:2.5rem; border-radius:10px;"
+                               value="10000" min="500" max="500000" step="100"
+                               oninput="updateSlider()">
+                    </div>
+                    <input type="range" id="montoSlider" class="form-range mt-2"
+                           min="500" max="100000" step="500" value="10000"
+                           oninput="syncMonto(this.value)" style="accent-color:#006633;">
+                    <div class="d-flex justify-content-between" style="font-size:0.72rem; color:#888;">
+                        <span>S/ 500</span><span>S/ 100,000</span>
+                    </div>
+                </div>
+
+                <!-- Plazo -->
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.85rem; font-weight:600;">
+                        Plazo (meses): <span id="plazoLabel" style="color:#006633;">12</span>
+                    </label>
+                    <input type="range" id="plazoSlider" class="form-range"
+                           min="1" max="60" step="1" value="12"
+                           oninput="updatePlazo(this.value)" style="accent-color:#006633;">
+                    <div class="d-flex justify-content-between" style="font-size:0.72rem; color:#888;">
+                        <span id="plazoMin">1 mes</span><span id="plazoMax">60 meses</span>
+                    </div>
+                </div>
+
+                <!-- Tasa mensual -->
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.85rem; font-weight:600;">
+                        Tasa de interés mensual (%)
+                    </label>
+                    <input type="number" id="tasaInput" class="form-control"
+                           style="border-radius:10px;"
+                           value="3.5" min="0.5" max="7.57" step="0.01"
+                           oninput="calcular()">
+                    <small class="text-muted" style="font-size:0.75rem;">TCEA máx: 90.84%</small>
+                </div>
+
+                <!-- Periodo de gracia -->
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.85rem; font-weight:600;">
+                        Período de gracia (meses): <span id="graciaLabel" style="color:#006633;">0</span>
+                    </label>
+                    <input type="range" id="graciaSlider" class="form-range"
+                           min="0" max="3" step="1" value="0"
+                           oninput="updateGracia(this.value); calcular();" style="accent-color:#006633;">
+                </div>
+
+                <!-- Seguro -->
+                <div class="mb-3">
+                    <label class="form-label" style="font-size:0.85rem; font-weight:600;">
+                        Seguro de desgravamen (S/ mensual)
+                    </label>
+                    <input type="number" id="seguroInput" class="form-control"
+                           style="border-radius:10px;"
+                           value="15" min="0" max="200" step="1"
+                           oninput="calcular()">
+                </div>
+
+                <button class="btn-mibanco w-100 mt-2" onclick="calcular()">
+                    <i class="bi bi-calculator me-2"></i>Simular Crédito
+                </button>
+            </div>
+        </div>
+
+        <!-- Results -->
+        <div class="col-lg-7">
+
+            <!-- Result summary card -->
+            <div class="simulador-result mb-4" id="resultCard">
+                <div class="row text-center g-3">
+                    <div class="col-sm-3 col-6">
+                        <div style="font-size:0.72rem; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">Cuota Mensual</div>
+                        <div style="font-size:2rem; font-weight:900;" id="resCuota">S/ 0.00</div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                        <div style="font-size:0.72rem; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">Total a Pagar</div>
+                        <div style="font-size:1.5rem; font-weight:800;" id="resTotal">S/ 0.00</div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                        <div style="font-size:0.72rem; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">Total Interés</div>
+                        <div style="font-size:1.5rem; font-weight:800;" id="resInteres">S/ 0.00</div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                        <div style="font-size:0.72rem; opacity:0.8; text-transform:uppercase; letter-spacing:1px;">TCEA</div>
+                        <div style="font-size:1.5rem; font-weight:800;" id="resTcea">0%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="mb-card mb-4">
+                <div class="mb-card-header">
+                    <h5><i class="bi bi-pie-chart me-2 text-green"></i>Composición del Pago</h5>
+                </div>
+                <div class="row align-items-center">
+                    <div class="col-sm-5 text-center">
+                        <canvas id="chartComposicion" height="180"></canvas>
+                    </div>
+                    <div class="col-sm-7">
+                        <canvas id="chartAmortizacion" height="180"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cronograma table -->
+            <div class="mb-card">
+                <div class="mb-card-header">
+                    <h5><i class="bi bi-table me-2 text-green"></i>Cronograma de Pagos</h5>
+                    <button class="btn btn-sm btn-outline-success" style="border-radius:20px; font-size:0.78rem;"
+                            onclick="exportarCSV()">
+                        <i class="bi bi-download me-1"></i>Exportar
+                    </button>
+                </div>
+                <div style="max-height:320px; overflow-y:auto;">
+                    <table class="table table-sm table-hover table-cronograma mb-0" style="font-size:0.78rem;">
+                        <thead style="position:sticky; top:0; z-index:1;">
+                            <tr>
+                                <th>#</th>
+                                <th>Fecha</th>
+                                <th>Capital</th>
+                                <th>Interés</th>
+                                <th>Seguro</th>
+                                <th>Cuota</th>
+                                <th>Saldo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tablaCronograma">
+                            <tr><td colspan="7" class="text-center text-muted py-3">Ingresa los parámetros y simula</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div th:replace="~{fragments/layout :: footer}"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+let pieChart = null, lineChart = null;
+let cronogramaData = [];
+
+function syncMonto(v) {
+    document.getElementById('montoInput').value = v;
+    calcular();
+}
+function updateSlider() {
+    document.getElementById('montoSlider').value = document.getElementById('montoInput').value;
+    calcular();
+}
+function updatePlazo(v) {
+    document.getElementById('plazoLabel').textContent = v;
+    calcular();
+}
+function updateGracia(v) {
+    document.getElementById('graciaLabel').textContent = v;
+}
+function autoFillTasa() {
+    const sel = document.getElementById('selectProducto');
+    const opt = sel.options[sel.selectedIndex];
+    document.getElementById('tasaInput').value = opt.value;
+    document.getElementById('plazoSlider').min = opt.dataset.min;
+    document.getElementById('plazoSlider').max = opt.dataset.max;
+    document.getElementById('plazoMin').textContent = opt.dataset.min + ' mes(es)';
+    document.getElementById('plazoMax').textContent = opt.dataset.max + ' meses';
+    calcular();
+}
+
+function fmt(v) {
+    return 'S/ ' + v.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
+function calcular() {
+    const P = parseFloat(document.getElementById('montoInput').value) || 10000;
+    const n = parseInt(document.getElementById('plazoSlider').value) || 12;
+    const tasa = parseFloat(document.getElementById('tasaInput').value) / 100 || 0.035;
+    const gracia = parseInt(document.getElementById('graciaSlider').value) || 0;
+    const seguro = parseFloat(document.getElementById('seguroInput').value) || 0;
+
+    // Sistema francés: cuota = P * i / (1 - (1+i)^-n)
+    const nEfectivo = n - gracia;
+    let cuotaCapInt = 0;
+    if (tasa > 0 && nEfectivo > 0) {
+        cuotaCapInt = P * tasa / (1 - Math.pow(1 + tasa, -nEfectivo));
+    } else {
+        cuotaCapInt = P / nEfectivo;
+    }
+    const cuotaTotal = cuotaCapInt + seguro;
+
+    // TCEA aproximada: (1+i)^12 - 1
+    const tcea = (Math.pow(1 + tasa, 12) - 1) * 100;
+
+    // Build cronograma
+    cronogramaData = [];
+    let saldo = P;
+    let totalInteres = 0;
+    const hoy = new Date();
+
+    for (let i = 1; i <= n; i++) {
+        const fechaPago = new Date(hoy);
+        fechaPago.setMonth(hoy.getMonth() + i);
+
+        if (i <= gracia) {
+            // Período de gracia: solo intereses
+            const intCuota = saldo * tasa;
+            totalInteres += intCuota;
+            cronogramaData.push({
+                num: i, fecha: fechaPago.toLocaleDateString('es-PE'),
+                capital: 0, interes: intCuota,
+                seguro, total: intCuota + seguro, saldo
+            });
+        } else {
+            const intCuota = saldo * tasa;
+            const capCuota = cuotaCapInt - intCuota;
+            saldo = Math.max(0, saldo - capCuota);
+            totalInteres += intCuota;
+            cronogramaData.push({
+                num: i, fecha: fechaPago.toLocaleDateString('es-PE'),
+                capital: capCuota, interes: intCuota,
+                seguro, total: cuotaTotal, saldo
+            });
+        }
+    }
+
+    const totalPagar = cuotaTotal * n;
+
+    // Update summary
+    document.getElementById('resCuota').textContent = fmt(cuotaTotal);
+    document.getElementById('resTotal').textContent = fmt(totalPagar);
+    document.getElementById('resInteres').textContent = fmt(totalInteres);
+    document.getElementById('resTcea').textContent = tcea.toFixed(2) + '%';
+
+    // Table
+    const tbody = document.getElementById('tablaCronograma');
+    tbody.innerHTML = cronogramaData.map(r => `
+        <tr>
+            <td><strong>${r.num}</strong></td>
+            <td>${r.fecha}</td>
+            <td>${fmt(r.capital)}</td>
+            <td>${fmt(r.interes)}</td>
+            <td>${fmt(r.seguro)}</td>
+            <td><strong>${fmt(r.total)}</strong></td>
+            <td>${fmt(r.saldo)}</td>
+        </tr>
+    `).join('');
+
+    // Pie chart
+    const pieCtx = document.getElementById('chartComposicion').getContext('2d');
+    if (pieChart) pieChart.destroy();
+    pieChart = new Chart(pieCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Capital', 'Interés', 'Seguro'],
+            datasets: [{
+                data: [P, totalInteres, seguro * n],
+                backgroundColor: ['#006633', '#F5C518', '#2d6a9f'],
+                borderWidth: 2, borderColor: '#fff'
+            }]
+        },
+        options: {
+            plugins: { legend: { position: 'bottom', labels: { font: { size: 10 }, usePointStyle: true } } },
+            cutout: '60%'
+        }
+    });
+
+    // Line chart amortization
+    const lineCtx = document.getElementById('chartAmortizacion').getContext('2d');
+    if (lineChart) lineChart.destroy();
+    const labels = cronogramaData.map(r => r.num);
+    const saldos = cronogramaData.map(r => r.saldo);
+    const capitales = cronogramaData.map(r => r.capital);
+    lineChart = new Chart(lineCtx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Saldo capital',
+                    data: saldos,
+                    borderColor: '#006633', backgroundColor: 'rgba(0,102,51,0.1)',
+                    fill: true, tension: 0.4, pointRadius: 0
+                },
+                {
+                    label: 'Capital / cuota',
+                    data: capitales,
+                    borderColor: '#F5C518', backgroundColor: 'rgba(245,197,24,0.1)',
+                    fill: true, tension: 0.4, pointRadius: 0
+                }
+            ]
+        },
+        options: {
+            plugins: { legend: { labels: { font: { size: 9 }, usePointStyle: true } } },
+            scales: {
+                x: { display: false },
+                y: { grid: { color: '#f0f0f0' }, ticks: { font: { size: 9 } } }
+            }
+        }
+    });
+}
+
+function exportarCSV() {
+    if (!cronogramaData.length) return;
+    let csv = 'Cuota,Fecha,Capital,Interes,Seguro,Total,Saldo\n';
+    cronogramaData.forEach(r => {
+        csv += `${r.num},${r.fecha},${r.capital.toFixed(2)},${r.interes.toFixed(2)},${r.seguro.toFixed(2)},${r.total.toFixed(2)},${r.saldo.toFixed(2)}\n`;
+    });
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'cronograma_mibanco.csv'; a.click();
+}
+
+// Init
+calcular();
+</script>
+</body>
+</html>

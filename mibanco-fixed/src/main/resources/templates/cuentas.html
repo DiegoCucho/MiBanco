@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mis Cuentas | MiBanco Perú</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link th:href="@{/css/mibanco.css}" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{fragments/layout :: navbar}"></div>
+<div class="main-content">
+    <h4 style="font-weight:800; color:#006633;" class="mb-4"><i class="bi bi-wallet2 me-2"></i>Mis Cuentas</h4>
+
+    <div th:if="${cuentas != null and !cuentas.isEmpty()}">
+        <div class="row g-4 mb-4">
+            <div class="col-md-6 col-lg-4" th:each="cuenta : ${cuentas}">
+                <div th:class="${cuenta.moneda.name() == 'PEN' ? 'account-card pen-card' : 'account-card usd-card'}" style="cursor:default;">
+                    <div class="card-product" th:text="${cuenta.producto}">Producto</div>
+                    <div class="card-number" th:text="${cuenta.numeroCuenta}">N° Cuenta</div>
+                    <div class="card-balance"
+                         th:text="${(cuenta.moneda.name() == 'PEN' ? 'S/ ' : '$ ') + #numbers.formatDecimal(cuenta.saldo, 1, 'COMMA', 2, 'POINT')}">0.00</div>
+                    <div class="card-currency">
+                        <span th:text="${cuenta.moneda.name() == 'PEN' ? 'Soles (PEN)' : 'Dólares (USD)'}">Moneda</span>
+                        •
+                        <span style="background:rgba(255,255,255,0.2); padding:1px 8px; border-radius:10px;" th:text="${cuenta.estado.name()}">ACTIVA</span>
+                    </div>
+                    <div class="mt-3 d-flex gap-2">
+                        <a href="/movimientos" class="btn btn-sm" style="background:rgba(255,255,255,0.2); color:#fff; border-radius:20px; font-size:0.75rem; border:none;">
+                            <i class="bi bi-clock-history me-1"></i>Movimientos
+                        </a>
+                        <a href="/transferencias" class="btn btn-sm" style="background:rgba(255,255,255,0.15); color:#fff; border-radius:20px; font-size:0.75rem; border:none;">
+                            <i class="bi bi-send me-1"></i>Transferir
+                        </a>
+                    </div>
+                    <div class="mt-2" style="font-size:0.75rem; opacity:0.7;"
+                         th:if="${cuenta.interesMensual != null and cuenta.interesMensual.compareTo(T(java.math.BigDecimal).ZERO) > 0}">
+                        Interés mensual: <span th:text="${#numbers.formatDecimal(cuenta.interesMensual.multiply(T(java.math.BigDecimal).valueOf(100)), 1, 'COMMA', 2, 'POINT') + '%'}"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tarjetas asociadas -->
+        <div th:if="${tarjetas != null and !tarjetas.isEmpty()}" class="mb-card">
+            <div class="mb-card-header">
+                <h5><i class="bi bi-credit-card me-2 text-green"></i>Mis Tarjetas</h5>
+            </div>
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-4" th:each="t : ${tarjetas}">
+                    <div style="border-radius:16px; padding:1.2rem; background:linear-gradient(135deg,#006633,#009944); color:#fff; position:relative; overflow:hidden;">
+                        <div style="font-size:0.72rem; opacity:0.7; text-transform:uppercase; letter-spacing:1px;" th:text="${t.tipo.name()}">TIPO</div>
+                        <div style="font-family:monospace; font-size:1.1rem; letter-spacing:3px; margin:0.5rem 0;" th:text="${t.numeroEnmascarado}">**** **** **** ****</div>
+                        <div style="font-size:0.75rem; opacity:0.7;">Vence: <span th:text="${t.fechaVencimiento}">-</span></div>
+                        <div style="position:absolute; top:1rem; right:1rem; font-size:1.2rem; font-weight:900; font-style:italic; opacity:0.9;">VISA</div>
+                        <div class="mt-2">
+                            <span class="badge" th:classappend="${t.estado.name() == 'ACTIVA' ? 'bg-success' : 'bg-danger'}" th:text="${t.estado.name()}">ACTIVA</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div th:if="${cuentas == null or cuentas.isEmpty()}" class="text-center text-muted py-5">
+        <i class="bi bi-wallet2" style="font-size:3rem; color:#ccc;"></i>
+        <p class="mt-3">No tienes cuentas activas.</p>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
